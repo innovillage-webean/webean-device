@@ -2,6 +2,7 @@ import { Logger } from "@nestjs/common";
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { DeviceService } from "../device.service";
+import { LiveDetectionRecord } from "../interface/device";
 
 
 @WebSocketGateway({cors: { origin: '*' }, namespace: '/device'})
@@ -95,5 +96,16 @@ export class DeviceGateway implements OnGatewayConnection, OnGatewayDisconnect{
     @SubscribeMessage('ping')
     handlePing(){
         return{ type: 'pong' , timestamp: new Date().toISOString()}
-    }
+    };
+
+    broadcastDetection(record: LiveDetectionRecord) {
+    this.server.to('dashboard').emit('detection', record);
+  }
+
+  broadcastDetectorStatus(connected: boolean) {
+    this.server.to('dashboard').emit('detector_status', {
+      connected,
+      timestamp: new Date().toISOString(),
+    });
+  }
 }

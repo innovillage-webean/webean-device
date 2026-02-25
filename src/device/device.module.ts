@@ -7,6 +7,7 @@ import { SessionRepository } from './repository/session.repository';
 import { RecordRepository } from './repository/record.repository';
 import { MonthlyRepository } from './repository/monthly.repository';
 import { DatabaseModule } from '../database/database.module';
+import { DeviceController } from './device.controller';
 
 @Module({
     imports:[DatabaseModule],
@@ -20,5 +21,6 @@ import { DatabaseModule } from '../database/database.module';
         MonthlyRepository
     ],
     exports:[DeviceService],
+    controllers: [DeviceController],
 })
 export class DeviceModule {}

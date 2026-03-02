@@ -51,7 +51,7 @@ export class DeviceGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
        if(data.role === 'dashboard'){
         client.join('dashboard');
-        this.logger.log(`Signed Dashboard: ${client.id}`);
+        this.logger.log(`[REGISTER] Dashboard: ${client.id}`);
 
         client.emit('session_stats', this.deviceService.getLiveSession());
         client.emit('detector_status', {
@@ -61,7 +61,7 @@ export class DeviceGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
         return { type: 'registered', role: 'dashboard' }
        }
-
+       this.logger.warn(`[REGISTER] Role tidak dikenal: ${data?.role}`)
     };
 
     @SubscribeMessage('detection')
@@ -69,10 +69,11 @@ export class DeviceGateway implements OnGatewayConnection, OnGatewayDisconnect{
         @MessageBody() data: { baik: number, cacat:number},
         @ConnectedSocket() client:Socket,
     ){
-        if(client.id !== this.detectorSocket?.id){
-            this.logger.warn(`Unauthorized detector dari: ${client.id}`)
-            return;
-        };
+        this.logger.log(
+            `[DETECTION] Client: ${client.id} |` +
+            `DetectorSocket: ${this.detectorSocket?.id ?? 'NULL'}` +
+            `Data: ${JSON.stringify(data)}`
+        );
 
         const record = this.deviceService.recordDetection(
             data.baik ?? 0,
@@ -99,8 +100,8 @@ export class DeviceGateway implements OnGatewayConnection, OnGatewayDisconnect{
     };
 
     broadcastDetection(record: LiveDetectionRecord) {
-    this.server.to('dashboard').emit('detection', record);
-  }
+        this.server.to('dashboard').emit('detection', record);
+    }
 
   broadcastDetectorStatus(connected: boolean) {
     this.server.to('dashboard').emit('detector_status', {

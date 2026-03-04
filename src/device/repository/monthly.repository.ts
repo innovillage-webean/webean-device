@@ -39,11 +39,19 @@ export class MonthlyRepository {
 
     async findCurrentMonth() {
         const now = new Date();
-        return this.prisma.detection_monthly.findUnique(
+        const current = await this.prisma.detection_monthly.findUnique(
             {
                 where: { year_month: { year: now.getFullYear(), month: now.getMonth() + 1}}
             }
         );
+
+        if(current) return current;
+
+        return this.prisma.detection_monthly.findFirst(
+            {
+                orderBy:[{ year: 'desc' }, { month: 'desc' }]
+            }
+        )
     };
 
     async findHistory(limit: number) {
